@@ -41,16 +41,13 @@ def history():
 @bp.route('/recycle')
 def recycle_detail():
     # 这里可以直接渲染模板，后续可以从 SQLite 查询该分类下的物品列表传给前端
-    return render_template('category_detail.html') # 假设你保存的文件名是 index_detail.html
-    # 添加完成后重定向回首页
-    return redirect(url_for('main.index'))
+    return render_template('category_detail.html')
 
-# ==================== 新增：我的页面路由 ====================
 @bp.route('/profile')
 def profile():
     """我的页面"""
     return render_template('profile.html', active_page='profile')
-# 将这段加在 routes.py 的最下方
+
 @bp.route('/detail/<item_name>')
 def detail(item_name):
     mock_data = {
