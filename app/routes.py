@@ -68,3 +68,8 @@ def detail(item_name):
     
     # 把 mock_data 传给 detail.html，在模板里它就叫 'item'
     return render_template('detail.html', item=mock_data)
+
+@bp.route('/search')
+def search():
+    hot_searches = ['使用过的塑料袋', '口红', '防震泡沫', '牛奶纸盒']
+    return render_template('search.html', hot_searches=hot_searches)

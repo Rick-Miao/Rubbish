@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% set active_page = 'ocr' %}
+
+{% block content %}
+<div class="container-fluid p-3 bg-white min-vh-100">
+    
+    <div class="mb-4 pt-2">
+        <form action="#" method="GET">
+            <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                <span class="input-group-text bg-light border-0 text-secondary ps-3 pe-2">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="search" class="form-control bg-light border-0 py-2 shadow-none" placeholder="搜索垃圾查询对应分类" name="keyword">
+            </div>
+        </form>
+    </div>
+
+    <div class="mb-5">
+        <div class="text-secondary small mb-3">热门搜索</div>
+        <div class="d-flex flex-wrap gap-2">
+            
+            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">使用过的塑料袋</a>
+            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">口红</a>
+            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">防震泡沫</a>
+            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">牛奶纸盒</a>
+            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">旧衣服</a>
+            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">干电池</a>
+            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">剩菜剩饭</a>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <h5 class="fw-bold mb-4 text-center">生活垃圾分类指南</h5>
+        <div class="row g-3">
+            
+            <div class="col-6">
+                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: #266c86; border-color: #266c86;">
+                    <img src="{{ url_for('static', filename='images/可回收物.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="可回收物">
+                    <span class="fw-bold text-start flex-grow-1">可回收物</span>
+                </a>
+            </div>
+
+            <div class="col-6">
+                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: #ff1504; border-color: #ff1504;">
+                    <img src="{{ url_for('static', filename='images/有害垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="有害垃圾">
+                    <span class="fw-bold text-start flex-grow-1">有害垃圾</span>
+                </a>
+            </div>
+
+            <div class="col-6">
+                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: #26ac04; border-color: #26ac04;">
+                    <img src="{{ url_for('static', filename='images/厨余垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="厨余垃圾">
+                    <span class="fw-bold text-start flex-grow-1">厨余垃圾</span>
+                </a>
+            </div>
+
+            <div class="col-6">
+                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: #261504; border-color: #261504;">
+                    <img src="{{ url_for('static', filename='images/其他垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="其他垃圾">
+                    <span class="fw-bold text-start flex-grow-1">其他垃圾</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="mt-5 pb-5 text-center">
+        <img src="{{ url_for('static', filename='images/poster.jpg') }}" class="img-fluid rounded-4 w-100 object-fit-cover" alt="环保海报">
+    </div>
+
+</div>
+{% endblock %}
