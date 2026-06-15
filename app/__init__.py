@@ -42,6 +42,7 @@ def create_app():
 
     # 自动建表
     with app.app_context():
+        from app import models
         db.create_all()
 
     return app
