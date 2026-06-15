@@ -93,6 +93,8 @@ class Feedback(db.Model):
 
     # 外键：关联到识别记录表 (针对哪条记录)
     record_id = db.Column(db.Integer, db.ForeignKey('records.record_id'), nullable=False, unique=True)
+    # 【新增】外键：关联到用户表，告诉 SQLAlchemy 这条反馈属于哪个用户
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
 
     def __repr__(self):
         return f'<Feedback {self.id} by User {self.user_id}>'
