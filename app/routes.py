@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app import db
+from app.models import Item, Category
+
 
 # 定义蓝图，'main' 是蓝图名称，__name__ 告诉 Flask 它的包路径
 bp = Blueprint('main', __name__)
@@ -69,3 +71,15 @@ def detail(item_name):
 def search():
     hot_searches = ['使用过的塑料袋', '口红', '防震泡沫', '牛奶纸盒']
     return render_template('search.html', hot_searches=hot_searches)
+
+
+@bp.route('/high-frequency')
+def high_frequency_list():
+    """
+    获取高频垃圾列表页面
+    """
+    # 查询逻辑：查找标记为高频(hign_freq_verify)的物品，并按ID倒序排列
+    # 同时预加载关联的 category 类别信息，避免在模板中产生 N+1 查询问题
+    items = Item.query.filter_by(high_freq_verify=True).order_by(Item.item_id.desc()).all()
+
+    return render_template('high_frequency.html', items=items)
