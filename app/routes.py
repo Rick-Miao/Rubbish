@@ -35,7 +35,6 @@ def history():
         }
     ]
     
-<<<<<<< HEAD
     # 将数据传递给 history.html 模板
     return render_template('history.html', history_data=history_data)
 
@@ -43,7 +42,6 @@ def history():
 def recycle_detail():
     # 这里可以直接渲染模板，后续可以从 SQLite 查询该分类下的物品列表传给前端
     return render_template('category_detail.html') # 假设你保存的文件名是 index_detail.html
-=======
     # 添加完成后重定向回首页
     return redirect(url_for('main.index'))
 # 将这段加在 routes.py 的最下方
@@ -64,4 +62,3 @@ def detail(item_name):
     
     # 把 mock_data 传给 detail.html，在模板里它就叫 'item'
     return render_template('detail.html', item=mock_data)
->>>>>>> e46a0a10c78691b09618b79915f9d63a2d76a1ab
