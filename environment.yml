@@ -1,0 +1,12 @@
+name: rubbish
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - flask>=3.0.0
+  - flask-sqlalchemy>=3.1.0
+  - python-dotenv>=1.0.0
+  - pip
+  - pip:
+    - gunicorn  # 用于后续可能的生产环境部署测试
