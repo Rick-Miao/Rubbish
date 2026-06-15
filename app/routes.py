@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app import db
-from app.models import Task
 
 # 定义蓝图，'main' 是蓝图名称，__name__ 告诉 Flask 它的包路径
 bp = Blueprint('main', __name__)
