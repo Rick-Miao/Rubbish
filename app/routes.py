@@ -8,6 +8,10 @@ bp = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
+@bp.route('/profile')
+def profile():
+    return render_template('profile.html')
+
 @bp.route('/history')
 def history():
     history_data = [
@@ -41,11 +45,6 @@ def history():
 def recycle_detail():
     # 这里可以直接渲染模板，后续可以从 SQLite 查询该分类下的物品列表传给前端
     return render_template('category_detail.html')
-
-@bp.route('/profile')
-def profile():
-    """我的页面"""
-    return render_template('profile.html', active_page='profile')
 
 @bp.route('/detail/<item_name>')
 def detail(item_name):

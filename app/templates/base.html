@@ -32,7 +32,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link py-2 {% if active_page == 'profile' %}text-primary active{% else %}text-secondary{% endif %}" href="#">
+                    <a class="nav-link py-2 {% if active_page == 'profile' %}text-primary active{% else %}text-secondary{% endif %}" href="{{  url_for('main.profile') }}">
                         <i class="bi bi-person-circle d-block text-center fs-4 mb-1"></i>
                         <span class="d-block text-center small fw-medium">我的</span>
                     </a>
