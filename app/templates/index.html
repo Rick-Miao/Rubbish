@@ -1,90 +1,92 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <!-- 核心：禁止缩放，宽度等于设备宽度，适合手机浏览 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>移动端任务管理</title>
-    <style>
-        /* 移动端基础样式 */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            padding: 20px; 
-            background-color: #f5f5f7; 
-            margin: 0; 
-            color: #333;
-        }
-        h2 { text-align: center; margin-bottom: 20px; font-size: 1.2rem; }
-        
-        .card { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 15px; 
-            margin-bottom: 15px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-        }
-        
-        /* 适合手指点击的大输入框和按钮 */
-        input[type="text"] { 
-            width: 100%; 
-            padding: 14px; 
-            border: 1px solid #ddd; 
-            border-radius: 10px; 
-            box-sizing: border-box; 
-            font-size: 16px; /* 防止 iOS 自动放大 */
-            margin-bottom: 12px; 
-            outline: none;
-        }
-        input[type="text"]:focus { border-color: #007AFF; }
-        
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            background-color: #007AFF; 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            font-weight: 600; 
-            cursor: pointer;
-        }
-        button:active { background-color: #0056b3; }
-        
-        .task-item { 
-            padding: 12px 0; 
-            border-bottom: 1px solid #eee; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .task-item:last-child { border-bottom: none; }
-        .time { color: #999; font-size: 12px; }
-        .empty-tip { text-align: center; color: #999; padding: 20px 0; }
-    </style>
-</head>
-<body>
-    <h2>📱 我的任务清单</h2>
+{% extends 'base.html' %}
+{% set active_page = 'identify' %}
+
+{% block content %}
+<div class="container-fluid p-3">
     
-    <!-- 添加任务表单 -->
-    <div class="card">
-        <form action="{{ url_for('main.add_task') }}" method="POST">
-            <input type="text" name="title" placeholder="输入新任务..." required autocomplete="off">
-            <button type="submit">添加任务</button>
-        </form>
+    <!-- 顶部两个并排按钮 -->
+    <div class="row g-3 mb-4">
+        <div class="col-6">
+            <a href="#" class="btn btn-primary w-100 py-3 fs-5 fw-bold shadow-sm">
+                <i class="bi bi-camera-fill me-2"></i>识别
+            </a>
+        </div>
+        <div class="col-6">
+            <a href="#" class="btn btn-outline-primary w-100 py-3 fs-5 fw-bold shadow-sm">
+                <i class="bi bi-book-fill me-2"></i>分类指南
+            </a>
+        </div>
     </div>
 
-    <!-- 任务列表展示 -->
-    <div class="card">
-        {% if tasks %}
-            {% for task in tasks %}
-                <div class="task-item">
-                    <span>{{ task.title }}</span>
-                    <span class="time">{{ task.created_at.strftime('%m-%d %H:%M') }}</span>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p class="empty-tip">暂无任务，快去添加吧！</p>
-        {% endif %}
+    <!-- 高频易错垃圾 -->
+    <div class="mb-4">
+        <h6 class="fw-bold mb-3 text-secondary">高频易错垃圾</h6>
+        <div class="position-relative">
+            <!-- d-flex + flex-nowrap + overflow-auto 实现纯 Bootstrap 横向滚动 -->
+            <div class="d-flex flex-nowrap overflow-auto pb-2 gap-3">
+                <a href="#" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
+                    <img src="{{ url_for('static', filename='images/废电池.png') }}" class="rounded-3 border bg-white w-100" alt="废电池">
+                    <div class="small mt-2">废电池</div>
+                </a>
+                <a href="#" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
+                    <img src="{{ url_for('static', filename='images/纸巾.png') }}" class="rounded-3 border bg-white w-100" alt="纸巾">
+                    <div class="small mt-2">纸巾</div>
+                </a>
+                <a href="#" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
+                    <img src="https://via.placeholder.com/100x100/e9ecef/6c757d?text=骨头" class="rounded-3 border bg-white w-100" alt="大骨头">
+                    <div class="small mt-2">大骨头</div>
+                </a>
+                <a href="#" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
+                    <img src="https://via.placeholder.com/100x100/e9ecef/6c757d?text=纸巾" class="rounded-3 border bg-white w-100" alt="纸巾">
+                    <div class="small mt-2">用过的纸巾</div>
+                </a>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+
+    <!-- 垃圾索引 -->
+    <div class="mb-4">
+        <h6 class="fw-bold mb-3 text-secondary">垃圾索引</h6>
+        <div class="row g-3">
+            
+            <!-- 可回收物 -->
+            <div class="col-6">
+                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: #266c86; border-color: #266c86;">
+                    <img src="{{ url_for('static', filename='images/可回收物.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="可回收物">
+                    <span class="fw-bold text-start flex-grow-1">可回收物</span>
+                </a>
+            </div>
+
+            <!-- 有害垃圾 -->
+            <div class="col-6">
+                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: #ff1504; border-color: #ff1504;">
+                    <img src="{{ url_for('static', filename='images/有害垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="有害垃圾">
+                    <span class="fw-bold text-start flex-grow-1">有害垃圾</span>
+                </a>
+            </div>
+
+            <!-- 厨余垃圾 -->
+            <div class="col-6">
+                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: #26ac04; border-color: #26ac04;">
+                    <img src="{{ url_for('static', filename='images/厨余垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="厨余垃圾">
+                    <span class="fw-bold text-start flex-grow-1">厨余垃圾</span>
+                </a>
+            </div>
+
+            <!-- 其他垃圾 -->
+            <div class="col-6">
+                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: #261504; border-color: #261504;">
+                    <img src="{{ url_for('static', filename='images/其他垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="其他垃圾">
+                    <span class="fw-bold text-start flex-grow-1">其他垃圾</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
