@@ -6,14 +6,17 @@ from app.models import Item, Category
 # 定义蓝图，'main' 是蓝图名称，__name__ 告诉 Flask 它的包路径
 bp = Blueprint('main', __name__)
 
+# 首页路由
 @bp.route('/')
 def index():
     return render_template('index.html')
 
+# 个人中心路由
 @bp.route('/profile')
 def profile():
     return render_template('profile.html')
 
+# 识别历史路由
 @bp.route('/history')
 def history():
     history_data = [
@@ -48,6 +51,8 @@ def recycle_detail():
     # 这里可以直接渲染模板，后续可以从 SQLite 查询该分类下的物品列表传给前端
     return render_template('category_detail.html')
 
+# 物品详情路由，URL 中包含物品名称参数
+# TODO: 后续可以改成 item_id，避免物品名称重复导致的问题
 @bp.route('/detail/<item_name>')
 def detail(item_name):
     mock_data = {

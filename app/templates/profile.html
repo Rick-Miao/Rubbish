@@ -32,9 +32,11 @@
         <!-- 历史记录 -->
         <div class="col-12">
             <div class="bg-secondary-subtle p-4 text-center rounded-0">
-                <button class="btn btn-light fw-semibold py-3 w-100 rounded-4 shadow-sm">
+                <!-- 将 button 改为 a 标签，并添加 href 跳转 -->
+                <a href="{{ url_for('main.history') }}" 
+                   class="btn btn-light fw-semibold py-3 w-100 rounded-4 shadow-sm text-decoration-none text-dark">
                     历史记录
-                </button>
+                </a>
             </div>
         </div>
 

@@ -20,7 +20,12 @@
 
     <!-- 高频易错垃圾 -->
     <div class="mb-4">
-        <h6 class="fw-bold mb-3 text-secondary">高频易错垃圾</h6>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold text-secondary mb-0">高频易错垃圾</h6>
+            <a href="{{ url_for('main.high_frequency_list') }}" class="text-decoration-none text-secondary fs-5">
+                &gt;
+            </a>
+        </div>
         <div class="position-relative">
             <!-- d-flex + flex-nowrap + overflow-auto 实现纯 Bootstrap 横向滚动 -->
             <div class="d-flex flex-nowrap overflow-auto pb-2 gap-3">
