@@ -23,3 +23,9 @@ def add_task():
     
     # 添加完成后重定向回首页
     return redirect(url_for('main.index'))
+
+# ==================== 新增：我的页面路由 ====================
+@bp.route('/profile')
+def profile():
+    """我的页面"""
+    return render_template('profile.html', active_page='profile')

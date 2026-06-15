@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}我的{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- 用户头像 + 昵称 -->
+    <div class="text-center mb-5">
+        <div class="mx-auto mb-3" style="width: 140px; height: 140px;">
+            <img id="user-avatar" 
+                 src="https://via.placeholder.com/140" 
+                 alt="用户头像"
+                 class="rounded-circle border border-4 border-white shadow"
+                 style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <h4 id="user-nickname" class="fw-bold mb-1">用户昵称</h4>
+        <small class="text-muted">欢迎回来</small>
+    </div>
+
+    <!-- 三个淡灰色方框（无框线）+ 白色按钮 -->
+    <div class="row g-3 mx-0">
+        <!-- 个人资料 -->
+        <div class="col-12">
+            <div class="bg-secondary-subtle p-4 text-center rounded-0">
+                <button class="btn btn-light fw-semibold py-3 w-100 rounded-4 shadow-sm">
+                    个人资料
+                </button>
+            </div>
+        </div>
+
+        <!-- 历史记录 -->
+        <div class="col-12">
+            <div class="bg-secondary-subtle p-4 text-center rounded-0">
+                <button class="btn btn-light fw-semibold py-3 w-100 rounded-4 shadow-sm">
+                    历史记录
+                </button>
+            </div>
+        </div>
+
+        <!-- 关于软件 -->
+        <div class="col-12">
+            <div class="bg-secondary-subtle p-4 text-center rounded-0">
+                <button class="btn btn-light fw-semibold py-3 w-100 rounded-4 shadow-sm">
+                    关于软件
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
