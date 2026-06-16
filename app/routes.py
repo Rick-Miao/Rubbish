@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 # 数据库与模型统一导入
 from app import db
 from app.models import Item, Category, User 
+import uuid  # 用于生成唯一的文件名
 
 try:
     from ultralytics import YOLO
@@ -35,29 +36,54 @@ def index():
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # 1. 接收前端表单数据
+        # 1. 接收前端文本数据
         email = request.form.get('email')
         nickname = request.form.get('nickname')
         password = request.form.get('password')
         
-        # 2. 查重校验：去数据库里找找，这个邮箱是不是已经被注册了？
+        # 2. 查重校验
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash('该邮箱已被注册，请直接登录或使用其他邮箱。')
             return redirect(url_for('main.register'))
 
-        # 3. 密码加密：生成一串别人看不懂的乱码（哈希值）
+        # 3. 密码加密
         hashed_password = generate_password_hash(password)
         
-        # 4. 创建新用户对象
+        # 4. 【新增：处理头像文件上传】
+        # 默认给一个占位图，如果用户没传头像就用这个
+        avatar_url = 'https://via.placeholder.com/140?text=Avatar' 
+        
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            # 如果用户真的选中了一个文件
+            if file and file.filename != '':
+                # 提取文件的后缀名 (比如 jpg, png)
+                ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'jpg'
+                
+                # 用 uuid 生成一个绝对不会重复的文件名，防止图片被覆盖，也防止中文名乱码报错
+                filename = f"avatar_{uuid.uuid4().hex}.{ext}"
+                
+                # 设定保存目录为 app/static/images/avatars
+                avatar_dir = os.path.join('app', 'static', 'images', 'avatars')
+                os.makedirs(avatar_dir, exist_ok=True) # 如果没有这个文件夹，自动创建
+                
+                # 保存物理文件到你的电脑/服务器上
+                filepath = os.path.join(avatar_dir, filename)
+                file.save(filepath)
+                
+                # 生成给网页调用的静态路径
+                avatar_url = url_for('static', filename=f'images/avatars/{filename}')
+        
+        # 5. 创建新用户对象，这次把真实头像路径传进去
         new_user = User(
             email=email, 
             nickname=nickname, 
-            password=hashed_password
-            # avatar 字段在 models.py 里已经设了默认值，所以这里不传也可以
+            password=hashed_password,
+            avatar=avatar_url
         )
         
-        # 5. 存入数据库！
+        # 6. 存入数据库！
         db.session.add(new_user)
         db.session.commit()
         
