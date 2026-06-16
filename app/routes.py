@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app import db
 from app.models import Item, Category
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 
 
 # 定义蓝图，'main' 是蓝图名称，__name__ 告诉 Flask 它的包路径
@@ -11,10 +12,57 @@ bp = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
-# 个人中心路由
+# ================== 登录与注册模块 ==================
+
+@bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # 接收前端表单数据
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # 【模拟数据库校验】写死一个测试账号
+        if email == 'admin@test.com' and password == '123456':
+            # 登录成功，将用户信息存入 session
+            session['user_id'] = 1
+            session['nickname'] = '学术委员'
+            session['email'] = 'admin@test.com'
+            session['avatar'] = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'
+            return redirect(url_for('main.profile'))
+        else:
+            # 登录失败，发送报错提示
+            flash('账号或密码错误（请用测试账号: admin@test.com / 123456）')
+            
+    return render_template('login.html')
+
+@bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        # 接收注册表单 (这里模拟直接成功)
+        flash('注册成功！请使用刚注册的账号登录。')
+        return redirect(url_for('main.login'))
+        
+    return render_template('register.html')
+
+@bp.route('/logout')
+def logout():
+    # 清除 session 中的登录状态
+    session.clear()
+    return redirect(url_for('main.login'))
+
 @bp.route('/profile')
 def profile():
-    return render_template('profile.html')
+    # 核心拦截逻辑：如果 session 里没有 user_id，说明没登录，强制踢回登录页
+    if 'user_id' not in session:
+        return redirect(url_for('main.login'))
+        
+    # 如果已登录，把 session 里的数据打包成字典传给模板
+    mock_user = {
+        'nickname': session.get('nickname'),
+        'email': session.get('email'),
+        'avatar': session.get('avatar')
+    }
+    return render_template('profile.html', user=mock_user)
 
 # 识别历史路由
 @bp.route('/history')
@@ -87,3 +135,6 @@ def high_frequency_list():
     items = Item.query.filter_by(high_freq_verify=True).order_by(Item.item_id.desc()).all()
 
     return render_template('high_frequency.html', items=items)
+@bp.route('/about')
+def about():
+    return render_template('about.html')

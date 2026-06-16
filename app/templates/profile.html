@@ -5,48 +5,39 @@
 {% block content %}
 <div class="container py-4">
 
-    <!-- 用户头像 + 昵称 -->
-    <div class="text-center mb-5">
-        <div class="mx-auto mb-3" style="width: 140px; height: 140px;">
-            <img id="user-avatar" 
-                 src="https://via.placeholder.com/140" 
+    <div class="text-center mb-5 mt-4">
+        <div class="mx-auto mb-3" style="width: 120px; height: 120px;">
+            <img src="{{ user.avatar }}" 
                  alt="用户头像"
-                 class="rounded-circle border border-4 border-white shadow"
+                 class="rounded-circle border border-4 border-white shadow-sm"
                  style="width: 100%; height: 100%; object-fit: cover;">
         </div>
-        <h4 id="user-nickname" class="fw-bold mb-1">用户昵称</h4>
-        <small class="text-muted">欢迎回来</small>
+        <h4 class="fw-bold mb-1">{{ user.nickname }}</h4>
+        <small class="text-muted">{{ user.email }}</small>
     </div>
 
-    <!-- 三个淡灰色方框（无框线）+ 白色按钮 -->
     <div class="row g-3 mx-0">
-        <!-- 个人资料 -->
         <div class="col-12">
-            <div class="bg-secondary-subtle p-4 text-center rounded-0">
-                <button class="btn btn-light fw-semibold py-3 w-100 rounded-4 shadow-sm">
-                    个人资料
-                </button>
-            </div>
-        </div>
-
-        <!-- 历史记录 -->
-        <div class="col-12">
-            <div class="bg-secondary-subtle p-4 text-center rounded-0">
-                <!-- 将 button 改为 a 标签，并添加 href 跳转 -->
+            <div class="bg-secondary-subtle p-3 text-center rounded-4">
                 <a href="{{ url_for('main.history') }}" 
-                   class="btn btn-light fw-semibold py-3 w-100 rounded-4 shadow-sm text-decoration-none text-dark">
-                    历史记录
+                   class="btn btn-light fw-semibold py-3 w-100 rounded-3 shadow-sm text-decoration-none text-dark">
+                    <i class="bi bi-clock-history me-2"></i>历史记录
                 </a>
             </div>
         </div>
 
-        <!-- 关于软件 -->
         <div class="col-12">
-            <div class="bg-secondary-subtle p-4 text-center rounded-0">
-                <button class="btn btn-light fw-semibold py-3 w-100 rounded-4 shadow-sm">
-                    关于软件
-                </button>
+            <div class="bg-secondary-subtle p-3 text-center rounded-4">
+                <a href="{{ url_for('main.about') }}" class="btn btn-light fw-semibold py-3 w-100 rounded-3 shadow-sm text-decoration-none text-dark">
+                    <i class="bi bi-info-circle me-2"></i>关于软件
+                </a>
             </div>
+        </div>
+        
+        <div class="col-12 mt-4">
+            <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger w-100 py-3 rounded-4 fw-bold">
+                退出登录
+            </a>
         </div>
     </div>
 
