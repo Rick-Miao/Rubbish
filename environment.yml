@@ -10,3 +10,4 @@ dependencies:
   - pip
   - pip:
     - gunicorn  # 用于后续可能的生产环境部署测试
+    - ultralytics  # YOLOv8 运行依赖

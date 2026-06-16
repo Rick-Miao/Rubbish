@@ -32,6 +32,7 @@ def create_app():
         app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['UPLOAD_FOLDER'] = str(BASE_DIR / 'instance' / 'uploads')
 
     # 初始化扩展
     db.init_app(app)

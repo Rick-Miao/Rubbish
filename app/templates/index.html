@@ -7,9 +7,10 @@
     <!-- 顶部两个并排按钮 -->
     <div class="row g-3 mb-4">
         <div class="col-6">
-            <a href="#" class="btn btn-primary w-100 py-3 fs-5 fw-bold shadow-sm">
+            <a id="identifyBtn" href="#" class="btn btn-primary w-100 py-3 fs-5 fw-bold shadow-sm">
                 <i class="bi bi-camera-fill me-2"></i>识别
             </a>
+            <input type="file" id="cameraInput" accept="image/*" style="display: none;">
         </div>
         <div class="col-6">
             <a href="#" class="btn btn-outline-primary w-100 py-3 fs-5 fw-bold shadow-sm">
@@ -94,4 +95,51 @@
     </div>
 
 </div>
+<script>
+    // 点击识别按钮 -> 触发文件选择
+    document.getElementById('identifyBtn').addEventListener('click', function(e) {
+        e.preventDefault();      // 阻止 <a> 的默认跳转
+        document.getElementById('cameraInput').click();
+    });
+
+    // 当用户选择了图片后
+    document.getElementById('cameraInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // 显示加载状态
+        const btn = document.getElementById('identifyBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>识别中...';
+        btn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        fetch("{{ url_for('main.identify_image') }}", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.category) {
+                alert('识别结果：' + data.category);
+                // 你也可以把结果显示在页面上，比如弹窗或固定区域
+            } else {
+                alert('识别失败：' + (data.error || '未知错误'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('网络错误，请稍后重试');
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            // 清空 input，以便重复上传同一个文件
+            document.getElementById('cameraInput').value = '';
+        });
+    });
+</script>
+
 {% endblock %}

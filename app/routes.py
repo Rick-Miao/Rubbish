@@ -1,7 +1,20 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+import os
+from pathlib import Path
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from app import db
 from app.models import Item, Category
 
+from werkzeug.utils import secure_filename
+
+try:
+    from ultralytics import YOLO
+except ImportError:
+    YOLO = None
+
+MODEL_FILE = Path(__file__).resolve().parent / 'best.pt'
+yolo_model = None
+if YOLO is not None and MODEL_FILE.exists():
+    yolo_model = YOLO(MODEL_FILE)
 
 # 定义蓝图，'main' 是蓝图名称，__name__ 告诉 Flask 它的包路径
 bp = Blueprint('main', __name__)
@@ -87,3 +100,56 @@ def high_frequency_list():
     items = Item.query.filter_by(high_freq_verify=True).order_by(Item.item_id.desc()).all()
 
     return render_template('high_frequency.html', items=items)
+
+@bp.route('/identify_image', methods=['POST'])
+def identify_image():
+    # 1. 检查是否有图片文件
+    if 'image' not in request.files:
+        return jsonify({'error': '没有图片文件'}), 400
+    
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': '未选择文件'}), 400
+    
+    if not allowed_file(file.filename):
+        return jsonify({'error': '不支持的文件格式'}), 400
+    
+    # 2. 可选：保存文件到服务器（临时）
+    filename = secure_filename(file.filename)
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', '/tmp')
+    os.makedirs(upload_folder, exist_ok=True)
+    filepath = os.path.join(upload_folder, filename)
+    file.save(filepath)
+    
+    # ==========================================
+    # 3. 这里调用你的垃圾分类识别模型
+    # ==========================================
+    if yolo_model is None:
+        return jsonify({'error': 'YOLO 模型未加载，请安装 ultralytics 并把 best.pt 放在 app/ 目录下'}), 500
+
+    try:
+        results = yolo_model.predict(source=filepath, save=False, device='cpu', conf=0.25)
+    except Exception as e:
+        return jsonify({'error': f'模型推理异常：{e}'}), 500
+
+    if not results or len(results[0].boxes) == 0:
+        predicted_category = '未检测到目标'
+    else:
+        result = results[0]
+        boxes = result.boxes
+        best_idx = int(boxes.conf.argmax().item()) if boxes.conf is not None else 0
+        class_id = int(boxes.cls[best_idx].item())
+        predicted_category = result.names.get(class_id, str(class_id))
+
+    # 删除临时文件
+    try:
+        os.remove(filepath)
+    except OSError:
+        pass
+
+    return jsonify({'category': predicted_category})
+
+
+def allowed_file(filename):
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'bmp', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
