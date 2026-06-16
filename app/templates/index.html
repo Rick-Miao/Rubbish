@@ -29,24 +29,14 @@
         </div>
         <div class="position-relative">
             <!-- d-flex + flex-nowrap + overflow-auto 实现纯 Bootstrap 横向滚动 -->
-            <div class="d-flex flex-nowrap overflow-auto pb-2 gap-3">
-                <a href="#" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
-                    <img src="{{ url_for('static', filename='images/废电池.png') }}" class="rounded-3 border bg-white w-100" alt="废电池">
-                    <div class="small mt-2">废电池</div>
-                </a>
-                <a href="#" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
-                    <img src="{{ url_for('static', filename='images/纸巾.png') }}" class="rounded-3 border bg-white w-100" alt="纸巾">
-                    <div class="small mt-2">纸巾</div>
-                </a>
-                <a href="#" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
-                    <img src="https://via.placeholder.com/100x100/e9ecef/6c757d?text=骨头" class="rounded-3 border bg-white w-100" alt="大骨头">
-                    <div class="small mt-2">大骨头</div>
-                </a>
-                <a href="#" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
-                    <img src="https://via.placeholder.com/100x100/e9ecef/6c757d?text=纸巾" class="rounded-3 border bg-white w-100" alt="纸巾">
-                    <div class="small mt-2">用过的纸巾</div>
-                </a>
-            </div>
+             <div class="d-flex flex-nowrap overflow-auto pb-2 gap-3">
+                {% for item in high_freq_items %}
+                    <a href="{{ url_for('main.detail', item_name=item.name) }}" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
+                        <img src="{{ item.item_url }}" class="rounded-3 border bg-white w-100" alt="{{ item.name }}">
+                        <div class="small mt-2">{{ item.name }}</div>
+                    </a>
+                {% endfor %}
+             </div>
         </div>
     </div>
 
