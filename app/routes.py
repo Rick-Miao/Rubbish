@@ -23,7 +23,9 @@ bp = Blueprint('main', __name__)
 # 首页路由
 @bp.route('/')
 def index():
-    return render_template('index.html')
+    high_freq_items = Item.query.filter_by(high_freq_verify='True').order_by(Item.item_id.desc()).limit(4).all()
+
+    return render_template('index.html', high_freq_items=high_freq_items)
 
 # ================== 登录与注册模块 ==================
 
@@ -113,24 +115,23 @@ def recycle_detail():
     return render_template('category_detail.html')
 
 # 物品详情路由，URL 中包含物品名称参数
-# TODO: 后续可以改成 item_id，避免物品名称重复导致的问题
 @bp.route('/detail/<item_name>')
 def detail(item_name):
-    mock_data = {
-        'name': item_name,
-        'category': '可回收物',
-        'guide': '1. 清理残留：倒掉剩余牛奶，用清水简单冲洗，避免残留液体滋生细菌或污染其他可回收物。\n2. 压扁处理：压扁牛奶盒可以减少体积，节省回收运输空间。\n3. 保持干燥：确保纸盒干燥后再投放，防止霉变影响回收质量。\n4. 分类投放：放入可回收物垃圾桶，不要与其他垃圾混合。',
-        # 这里先用网络占位图，如果你们 static/images 里有图，可以换成 url_for('static', filename='...')
-        'main_img': 'https://via.placeholder.com/800x400/e9ecef/6c757d?text=Milk+Carton+Cover',
-        'sub_imgs': [
-            'https://via.placeholder.com/200x300/e9ecef/6c757d?text=pic1',
-            'https://via.placeholder.com/200x300/e9ecef/6c757d?text=pic2',
-            'https://via.placeholder.com/200x300/e9ecef/6c757d?text=pic3'
-        ]
+    # 从数据库查询物品详情
+    item = Item.query.filter_by(name=item_name).first()
+    if not item:
+        # 如果数据库里没有这个物品
+        flash(f'未找到 "{item_name}" 的相关信息')
+        return redirect(url_for('main.index'))
+    data = {
+        'name': item.name,
+        'description': item.description,
+        'item_url': item.item_url,
+        'precautions': item.precautions,
+        'category': item.category.name,
     }
-    
-    # 把 mock_data 传给 detail.html，在模板里它就叫 'item'
-    return render_template('detail.html', item=mock_data)
+
+    return render_template('detail.html', item=data)
 
 @bp.route('/search')
 def search():
@@ -145,7 +146,7 @@ def high_frequency_list():
     """
     # 查询逻辑：查找标记为高频(hign_freq_verify)的物品，并按ID倒序排列
     # 同时预加载关联的 category 类别信息，避免在模板中产生 N+1 查询问题
-    items = Item.query.filter_by(high_freq_verify=True).order_by(Item.item_id.desc()).all()
+    items = Item.query.filter_by(high_freq_verify='True').order_by(Item.item_id.desc()).all()
 
     return render_template('high_frequency.html', items=items)
 
