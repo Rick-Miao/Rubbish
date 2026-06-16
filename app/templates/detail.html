@@ -1,11 +1,19 @@
 {% extends 'base.html' %}
-{% set active_page = 'identify' %}
 
 {% block content %}
 <div class="position-relative">
-    <a href="javascript:history.back()" class="position-absolute top-0 start-0 m-3 text-dark text-decoration-none z-3">
-        <i class="bi bi-chevron-left fs-1 fw-bold"></i>
-    </a>
+    <!-- 【核心修改】：根据 URL 参数 from 动态决定返回按钮的跳转目标 -->
+    {% if request.args.get('from') == 'record' %}
+        <!-- 如果是从历史记录进来的，直接返回历史记录页 -->
+        <a href="{{ url_for('main.history') }}" class="position-absolute top-0 start-0 m-3 text-dark text-decoration-none z-3">
+            <i class="bi bi-chevron-left fs-1 fw-bold"></i>
+        </a>
+    {% else %}
+        <!-- 其他情况（如识别、搜索、分类索引），使用浏览器原生返回上一页 -->
+        <a href="javascript:history.back()" class="position-absolute top-0 start-0 m-3 text-dark text-decoration-none z-3">
+            <i class="bi bi-chevron-left fs-1 fw-bold"></i>
+        </a>
+    {% endif %}
     <img src="{{ item.item_url }}" class="w-100 object-fit-cover" style="height: 250px;" alt="{{ item.name }}">
 </div>
 
@@ -18,7 +26,17 @@
         </div>
 
         {% if item.show_feedback %}
-        <a href="#" class="text-danger small text-decoration-none mt-2">人工纠错</a>
+            <!-- 状态为 pending，显示纠错按钮 -->
+            <a href="{{ url_for('main.feedback', record_id=item.record_id) }}" class="text-danger small text-decoration-none mt-2">人工纠错</a>
+        {% else %}
+            <!-- 状态不是 pending，显示当前状态的提示文字 -->
+            {% if item.verify_status == 'waiting' %}
+                <span class="text-warning small mt-2"><i class="bi bi-hourglass-split me-1"></i>已提交，待审核</span>
+            {% elif item.verify_status == 'verified' %}
+                <span class="text-success small mt-2"><i class="bi bi-check-circle me-1"></i>纠错已采纳</span>
+            {% elif item.verify_status == 'rejected' %}
+                <span class="text-danger small mt-2"><i class="bi bi-x-circle me-1"></i>纠错已驳回</span>
+            {% endif %}
         {% endif %}
     </div>
 

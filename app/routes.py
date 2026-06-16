@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 # 数据库与模型统一导入
 from app import db
-from app.models import Item, Category, User, Record
+from app.models import Item, Category, User, Record, Feedback
 import uuid  # 用于生成唯一的文件名
 
 try:
@@ -215,6 +215,13 @@ def detail(item_name):
             return redirect(url_for('main.detail', item_name='暂未收录', **{'from': from_source, 'record_id': record_id}))
         flash(f'未找到 "{item_name}" 的相关信息')
         return redirect(url_for('main.index'))
+    
+    verify_status = 'pending'  # 默认状态
+    if record_id and record_id.isdigit():
+        record = Record.query.get(int(record_id))
+        if record:
+            verify_status = record.verify_status
+
     data = {
         'name': item.name,
         'description': item.description,
@@ -222,7 +229,8 @@ def detail(item_name):
         'precautions': item.precautions,
         'category': item.category.name,
         'record_id': record_id,
-        'show_feedback': from_source in ['identify', 'record'] and record_id != ''
+        'verify_status': verify_status,
+        'show_feedback': from_source in ['identify', 'record'] and record_id != '' and verify_status == 'pending'
     }
 
     return render_template('detail.html', item=data)
@@ -345,3 +353,136 @@ def search_suggestions():
     
     # 只返回物品名称的列表，例如: ['废电池', '干电池']
     return jsonify([item.name for item in items])
+
+@bp.route('/admin/review')
+def admin_review():
+    # 1. 权限校验：必须是登录的管理员
+    if 'user_id' not in session:
+        return redirect(url_for('main.login'))
+    user = User.query.get(session['user_id'])
+    if not user or user.user_type != 'super':
+        flash('您没有权限访问该页面')
+        return redirect(url_for('main.profile'))
+        
+    # 2. 查询所有反馈记录，按反馈时间倒序排列
+    feedbacks = Feedback.query.order_by(Feedback.feedback_time.desc()).all()
+    
+    # 3. 按日期进行分组
+    grouped_data = defaultdict(list)
+    for fb in feedbacks:
+        date_str = fb.feedback_time.strftime('%Y-%m-%d')
+        time_str = fb.feedback_time.strftime('%H:%M')
+        
+        # 【核心】：利用 backref 层层获取关联数据
+        record = fb.source_record  # 获取对应的 Record 对象
+        item_obj = record.identified_item if record else None  # 获取对应的 Item 对象
+        
+        item_name = item_obj.name if item_obj else '未知物品'
+        category_name = item_obj.category.name if item_obj and item_obj.category else '未知分类'
+        
+        # 获取图片时间戳 (用于显示原图)
+        timestamp_ms = int(record.identify_time.timestamp() * 1000) if record and record.identify_time else 0
+        
+        # 获取提交反馈的用户昵称
+        user_nickname = fb.user.nickname if fb.user else '未知用户'
+        
+        # 获取该记录的审核状态 (pending, verified, rejected)
+        verify_status = record.verify_status if record else 'unknown'
+        
+        # 组装数据
+        grouped_data[date_str].append({
+            'feedback_id': fb.feedback_id,
+            'record_id': fb.record_id,
+            'item_name': item_name,
+            'category': category_name,
+            'content': fb.content,       # 用户的反馈内容
+            'time': time_str,
+            'timestamp': timestamp_ms,
+            'user_nickname': user_nickname,
+            'verify_status': verify_status
+        })
+        
+    review_data = [{'date': k, 'items': v} for k, v in grouped_data.items()]
+    
+    return render_template('admin_review.html', review_data=review_data)
+
+
+@bp.route('/feedback/<int:record_id>', methods=['GET', 'POST'])
+def feedback(record_id):
+    # 1. 权限校验：必须登录
+    if 'user_id' not in session:
+        return redirect(url_for('main.login'))
+    
+    user_id = session['user_id']
+    
+    # 2. 校验 record_id 是否存在
+    record = Record.query.get(record_id)
+    if not record:
+        flash('识别记录不存在')
+        return redirect(url_for('main.index'))
+        
+    # 3. 校验该记录是否已经提交过反馈 (因为 Feedback 表中 record_id 是 unique 的)
+    existing_feedback = Feedback.query.filter_by(record_id=record_id).first()
+    if existing_feedback:
+        flash('该记录已经提交过纠错反馈，请勿重复提交！')
+        # 重定向回详情页
+        item_name = record.identified_item.name if record.identified_item else '暂未收录'
+        return redirect(url_for('main.detail', item_name=item_name, **{'from': 'record', 'record_id': record_id}))
+
+    # 4. 处理 POST 提交
+    if request.method == 'POST':
+        content = request.form.get('content', '').strip()
+        if not content:
+            flash('反馈内容不能为空！')
+        else:
+            # 创建反馈记录并存入数据库
+            new_feedback = Feedback(
+                content=content,
+                record_id=record_id,
+                user_id=user_id
+            )
+            db.session.add(new_feedback)
+            record.verify_status = 'waiting'
+
+            db.session.commit()
+            
+            flash('感谢您的反馈，管理员将尽快审核！')
+            # 提交成功后，重定向回详情页
+            item_name = record.identified_item.name if record.identified_item else '暂未收录'
+            return redirect(url_for('main.detail', item_name=item_name, **{'from': 'record', 'record_id': record_id}))
+            
+    # 5. 处理 GET 请求，渲染页面并传入 record_id 和 user_id
+    return render_template('feedback.html', record_id=record_id, user_id=user_id)
+
+@bp.route('/api/review_feedback', methods=['POST'])
+def api_review_feedback():
+    # 1. 权限校验：必须是登录的管理员 (防止普通用户直接调用接口篡改数据)
+    if 'user_id' not in session:
+        return jsonify({'error': '未登录'}), 401
+    user = User.query.get(session['user_id'])
+    if not user or user.user_type != 'super':
+        return jsonify({'error': '权限不足'}), 403
+
+    # 2. 接收前端传来的 JSON 数据
+    data = request.get_json()
+    feedback_id = data.get('feedback_id')
+    action = data.get('action')
+
+    # 3. 参数合法性校验
+    if not feedback_id or action not in ['verified', 'rejected']:
+        return jsonify({'error': '参数错误'}), 400
+
+    # 4. 查询反馈记录及关联的识别记录
+    feedback = Feedback.query.get(feedback_id)
+    if not feedback:
+        return jsonify({'error': '反馈记录不存在'}), 404
+
+    record = feedback.source_record  # 利用 backref 获取对应的 Record 对象
+    if not record:
+        return jsonify({'error': '关联的识别记录不存在'}), 404
+
+    # 5. 核心逻辑：更新 verify_status
+    record.verify_status = action
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': '审核状态已更新'})

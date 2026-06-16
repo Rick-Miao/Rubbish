@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}人工纠错{% endblock %}
+
+{% block content %}
+<!-- 顶部导航栏 -->
+<nav class="navbar bg-white border-bottom sticky-top">
+    <div class="container-fluid position-relative py-2">
+        <a href="javascript:history.back()" class="btn btn-link text-dark text-decoration-none p-0">
+            <i class="bi bi-chevron-left fs-3"></i>
+        </a>
+        <h1 class="h5 fw-bold mb-0 position-absolute start-50 translate-middle-x">人工纠错</h1>
+        <div style="width: 24px;"></div> 
+    </div>
+</nav>
+
+<div class="container-fluid p-4">
+    <!-- 显示 flash 提示消息 -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-warning alert-dismissible fade show py-2" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
+            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('main.feedback', record_id=record_id) }}">
+        
+        <!-- 记录ID (只读) -->
+        <div class="mb-3">
+            <label class="form-label fw-bold text-secondary small">记录 ID</label>
+            <input type="text" class="form-control bg-light text-muted" value="{{ record_id }}" readonly>
+        </div>
+
+        <!-- 用户ID (只读) -->
+        <div class="mb-4">
+            <label class="form-label fw-bold text-secondary small">用户 ID</label>
+            <input type="text" class="form-control bg-light text-muted" value="{{ user_id }}" readonly>
+        </div>
+
+        <!-- 反馈内容 (可编辑) -->
+        <div class="mb-4">
+            <label for="content" class="form-label fw-bold text-secondary">反馈内容 <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="content" name="content" rows="6" 
+                      placeholder="请详细描述您认为正确的分类，或补充该物品的投放注意事项..." required></textarea>
+            <div class="form-text text-muted small">您的反馈将帮助我们一起完善垃圾分类数据库。</div>
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-primary py-3 fw-bold rounded-4 shadow-sm">
+                <i class="bi bi-send-check me-2"></i>提交反馈
+            </button>
+        </div>
+        
+    </form>
+</div>
+{% endblock %}

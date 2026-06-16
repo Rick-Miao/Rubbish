@@ -38,7 +38,7 @@
         <div class="col-12">
             <div class="bg-secondary-subtle p-3 text-center rounded-4">
                 <!-- href="#" 暂时留空，后续开发审核页面时再替换为真实的 url_for -->
-                <a href="#" class="btn btn-light fw-semibold py-3 w-100 rounded-3 shadow-sm text-decoration-none text-dark">
+                <a href="{{ url_for('main.admin_review') }}" class="btn btn-light fw-semibold py-3 w-100 rounded-3 shadow-sm text-decoration-none text-dark">
                     <i class="bi bi-shield-check me-2"></i>人工纠错审核
                 </a>
             </div>
