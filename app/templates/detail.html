@@ -16,7 +16,10 @@
             <h1 class="fw-bold mb-1">{{ item.name }}</h1>
             <h5 class="text-dark">{{ item.category }}</h5>
         </div>
+
+        {% if item.show_feedback %}
         <a href="#" class="text-danger small text-decoration-none mt-2">人工纠错</a>
+        {% endif %}
     </div>
 
     <div class="mb-4">

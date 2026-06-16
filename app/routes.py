@@ -178,7 +178,8 @@ def history():
             'category': category_name,
             'time': time_str,
             'item_name': item_name,
-            'timestamp': timestamp_ms
+            'timestamp': timestamp_ms,
+            'record_id': record.id_record
         })
     history_data = [{'date': k, 'items': v} for k, v in grouped_data.items()]
     
@@ -204,12 +205,14 @@ def category_detail(category_id):
 # 物品详情路由，URL 中包含物品名称参数
 @bp.route('/detail/<item_name>')
 def detail(item_name):
+    from_source = request.args.get('from', '')
+    record_id = request.args.get('record_id', '')
     # 从数据库查询物品详情
     item = Item.query.filter_by(name=item_name).first()
     if not item:
         # 如果数据库里没有这个物品
         if item_name != '暂未收录':
-            return redirect(url_for('main.detail', item_name='暂未收录'))
+            return redirect(url_for('main.detail', item_name='暂未收录', **{'from': from_source, 'record_id': record_id}))
         flash(f'未找到 "{item_name}" 的相关信息')
         return redirect(url_for('main.index'))
     data = {
@@ -218,6 +221,8 @@ def detail(item_name):
         'item_url': item.item_url,
         'precautions': item.precautions,
         'category': item.category.name,
+        'record_id': record_id,
+        'show_feedback': from_source in ['identify', 'record'] and record_id != ''
     }
 
     return render_template('detail.html', item=data)
@@ -274,6 +279,7 @@ def identify_image():
 
     predicted_name = '暂未收录'
     confidence = 0.0
+    record_id = None
 
     if results and len(results[0].boxes) > 0:
         result = results[0]
@@ -299,11 +305,19 @@ def identify_image():
             )
             db.session.add(new_record)
             db.session.commit()
-    return jsonify({'name': predicted_name})
+            record_id = new_record.id_record
+    
+    if not record_id:
+        try:
+            os.remove(filepath)
+        except OSError:
+            pass  # 如果文件因为某些原因已经不存在了，忽略错误
+
+    return jsonify({'name': predicted_name, 'record_id': record_id})
 
 
 def allowed_file(filename):
-    allowed_extensions = {'png', 'jpg', 'jpeg', 'bmp', 'gif'}
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'bmp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 @bp.route('/about')
 def about():

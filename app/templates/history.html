@@ -36,7 +36,7 @@
         
         <!-- 2. 该日期下的具体记录 -->
         {% for item in group['items'] %}
-        <a href="{{ url_for('main.detail', item_name=item.item_name) }}" class="list-group-item list-group-item-action d-flex align-items-center px-3 py-3">
+        <a href="{{ url_for('main.detail', item_name=item.item_name, from='record', record_id=item.record_id) }}" class="list-group-item list-group-item-action d-flex align-items-center px-3 py-3">
             
             <!-- 左侧：图片/图标占位区 -->
             <!-- 使用 bg-light 和 rounded-3 作为图片底底，如果有了真实图片可替换为 <img> -->
