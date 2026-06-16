@@ -1,23 +1,28 @@
 import os
 from pathlib import Path
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
-from app import db
-from app.models import Item, Category
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from datetime import datetime
 
+# Flask 相关工具统一导入
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, session
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+
+# 数据库与模型统一导入
+from app import db
+from app.models import Item, Category, User 
 
 try:
     from ultralytics import YOLO
 except ImportError:
     YOLO = None
+    
 
 MODEL_FILE = Path(__file__).resolve().parent / 'best.pt'
 yolo_model = None
 if YOLO is not None and MODEL_FILE.exists():
     yolo_model = YOLO(MODEL_FILE)
 
-# 定义蓝图，'main' 是蓝图名称，__name__ 告诉 Flask 它的包路径
+
 bp = Blueprint('main', __name__)
 
 # 首页路由
@@ -27,57 +32,93 @@ def index():
 
     return render_template('index.html', high_freq_items=high_freq_items)
 
-# ================== 登录与注册模块 ==================
-
-@bp.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        # 接收前端表单数据
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        # 【模拟数据库校验】写死一个测试账号
-        if email == 'admin@test.com' and password == '123456':
-            # 登录成功，将用户信息存入 session
-            session['user_id'] = 1
-            session['nickname'] = '学术委员'
-            session['email'] = 'admin@test.com'
-            session['avatar'] = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'
-            return redirect(url_for('main.profile'))
-        else:
-            # 登录失败，发送报错提示
-            flash('账号或密码错误（请用测试账号: admin@test.com / 123456）')
-            
-    return render_template('login.html')
+# ================== 真实数据库版：登录与注册模块 ==================
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # 接收注册表单 (这里模拟直接成功)
+        # 1. 接收前端表单数据
+        email = request.form.get('email')
+        nickname = request.form.get('nickname')
+        password = request.form.get('password')
+        
+        # 2. 查重校验：去数据库里找找，这个邮箱是不是已经被注册了？
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('该邮箱已被注册，请直接登录或使用其他邮箱。')
+            return redirect(url_for('main.register'))
+
+        # 3. 密码加密：生成一串别人看不懂的乱码（哈希值）
+        hashed_password = generate_password_hash(password)
+        
+        # 4. 创建新用户对象
+        new_user = User(
+            email=email, 
+            nickname=nickname, 
+            password=hashed_password
+            # avatar 字段在 models.py 里已经设了默认值，所以这里不传也可以
+        )
+        
+        # 5. 存入数据库！
+        db.session.add(new_user)
+        db.session.commit()
+        
         flash('注册成功！请使用刚注册的账号登录。')
         return redirect(url_for('main.login'))
         
     return render_template('register.html')
 
+
+@bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # 1. 接收前端传来的登录信息
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # 2. 从数据库中寻找这个邮箱对应的用户
+        user = User.query.filter_by(email=email).first()
+        
+        # 3. 如果用户存在，并且 (数据库里的加密密码 与 用户刚输入的密码 匹配)
+        if user and check_password_hash(user.password, password):
+            # 登录成功，记住这个用户的 ID
+            session['user_id'] = user.user_id
+            
+            # (可选) 更新最后登录时间，存入数据库
+            user.last_login_time = datetime.now()
+            db.session.commit()
+            
+            return redirect(url_for('main.profile'))
+        else:
+            # 登录失败
+            flash('邮箱或密码错误，请重试！')
+            
+    return render_template('login.html')
+
+
 @bp.route('/logout')
 def logout():
-    # 清除 session 中的登录状态
+    # 退出登录：清空 session 记忆
     session.clear()
     return redirect(url_for('main.login'))
 
+
 @bp.route('/profile')
 def profile():
-    # 核心拦截逻辑：如果 session 里没有 user_id，说明没登录，强制踢回登录页
+    # 安全拦截：如果没有 user_id 的记忆，说明没登录，踢回登录页
     if 'user_id' not in session:
         return redirect(url_for('main.login'))
         
-    # 如果已登录，把 session 里的数据打包成字典传给模板
-    mock_user = {
-        'nickname': session.get('nickname'),
-        'email': session.get('email'),
-        'avatar': session.get('avatar')
-    }
-    return render_template('profile.html', user=mock_user)
+    # 从数据库中实时获取该用户的最新信息
+    user = User.query.get(session['user_id'])
+    
+    # 防御性编程：万一数据库被清空了，但浏览器还有记忆
+    if not user:
+        session.clear()
+        return redirect(url_for('main.login'))
+        
+    # 把从数据库查出来的 user 对象直接传给前端模板
+    return render_template('profile.html', user=user)
 
 # 识别历史路由
 @bp.route('/history')
