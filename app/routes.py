@@ -208,6 +208,8 @@ def detail(item_name):
     item = Item.query.filter_by(name=item_name).first()
     if not item:
         # 如果数据库里没有这个物品
+        if item_name != '暂未收录':
+            return redirect(url_for('main.detail', item_name='暂未收录'))
         flash(f'未找到 "{item_name}" 的相关信息')
         return redirect(url_for('main.index'))
     data = {
@@ -316,3 +318,16 @@ def uploaded_file(filename):
     # 获取 instance 目录下的 uploads 文件夹
     uploads_dir = os.path.join(current_app.instance_path, 'uploads')
     return send_from_directory(uploads_dir, filename)
+
+@bp.route('/api/search_suggestions')
+def search_suggestions():
+    # 获取前端传来的输入关键字
+    keyword = request.args.get('keyword', '').strip()
+    if not keyword:
+        return jsonify([])
+    
+    # 模糊查询：名字里包含关键字的物品，最多返回 5 个候选
+    items = Item.query.filter(Item.name.like(f'%{keyword}%')).limit(5).all()
+    
+    # 只返回物品名称的列表，例如: ['废电池', '干电池']
+    return jsonify([item.name for item in items])
