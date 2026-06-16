@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% set active_page = 'identify' %}
+{% block title %}分类指南 - 垃圾分类助手{% endblock %}
+
+{% block content %}
+<nav class="navbar bg-white border-bottom sticky-top shadow-sm">
+    <div class="container-fluid position-relative py-2">
+        <a href="{{ url_for('main.index') }}" class="btn btn-link text-dark text-decoration-none p-0">
+            <i class="bi bi-chevron-left fs-3"></i>
+        </a>
+        
+        <h1 class="h5 fw-bold mb-0 position-absolute start-50 translate-middle-x">分类指南</h1>
+        
+        <div style="width: 24px;"></div> 
+    </div>
+</nav>
+
+<div class="container-fluid pt-3 pb-5" style="margin-bottom: 80px;">
+    
+    <div class="alert alert-success d-flex align-items-center rounded-4 shadow-sm border-0 py-2 mb-3" role="alert">
+        <i class="bi bi-lightbulb-fill text-warning fs-4 me-2"></i>
+        <div class="small text-muted">
+            <strong>温馨提示：</strong>长按下方海报即可保存到手机相册，随时随地查看分类秘籍哦！
+        </div>
+    </div>
+
+    <div class="text-center">
+        <img src="{{ url_for('static', filename='images/poster.png') }}" class="img-fluid rounded-4 shadow-sm w-100" alt="生活垃圾分类指南海报">
+    </div>
+
+    <div class="text-center mt-4 text-muted small opacity-75">
+        <p>— 保护环境，从每一件小事做起 —</p>
+    </div>
+
+</div>
+{% endblock %}

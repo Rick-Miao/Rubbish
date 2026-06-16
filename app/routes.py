@@ -281,3 +281,6 @@ def allowed_file(filename):
 @bp.route('/about')
 def about():
     return render_template('about.html')
+@bp.route('/guide')
+def guide():
+    return render_template('guide.html')
