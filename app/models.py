@@ -1,6 +1,7 @@
 from app import db
 from datetime import datetime
 
+
 # 1. 用户模型 (对应图中左侧 "用户" 实体)
 class User(db.Model):
     __tablename__ = 'users'
@@ -10,6 +11,8 @@ class User(db.Model):
     nickname = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
+    # 【新增】头像字段，给一个默认头像的占位图链接
+    avatar = db.Column(db.String(200), default='https://via.placeholder.com/140?text=Avatar') 
     user_type = db.Column(db.String(20), default='normal')  # 用户类别，默认为normal，可以改
     created_at = db.Column(db.DateTime, default=datetime.now)
 

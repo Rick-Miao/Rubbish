@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% set active_page = 'profile' %}
+{% block title %}关于软件 - 垃圾分类助手{% endblock %}
+
+{% block content %}
+<nav class="navbar bg-white border-bottom sticky-top shadow-sm">
+    <div class="container-fluid position-relative py-2">
+        <a href="{{ url_for('main.profile') }}" class="btn btn-link text-dark text-decoration-none p-0">
+            <i class="bi bi-chevron-left fs-3"></i>
+        </a>
+        
+        <h1 class="h5 fw-bold mb-0 position-absolute start-50 translate-middle-x">关于软件</h1>
+        
+        <div style="width: 24px;"></div> 
+    </div>
+</nav>
+
+<div class="container py-5 min-vh-100">
+    
+    <div class="text-center mb-5">
+        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+            <i class="bi bi-recycle" style="font-size: 2.5rem;"></i>
+        </div>
+        <h3 class="fw-bold mb-1">垃圾分类助手</h3>
+        <p class="text-muted small">Version 1.0.0</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-people-fill text-primary me-2 fs-5"></i>开发团队</h6>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-medium fs-6">缪彭哲</span>
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-medium fs-6">尤嘉晨</span>
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-medium fs-6">常凯吉</span>
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-medium fs-6">梁铭轩</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-journal-bookmark-fill text-primary me-2 fs-5"></i>项目背景</h6>
+            <p class="text-muted mb-0" style="line-height: 1.8; text-align: justify;">
+                本软件是由上述小组成员共同研发的环保科技项目，作为 <strong>《专业方向课程设计》</strong> 课程的最终交付成果。我们致力于通过技术手段降低垃圾分类的认知门槛，与您共建绿色、低碳的美好城市。
+            </p>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <p class="text-muted small opacity-75">&copy; 2026 专业方向课程设计小组<br>保留所有权利</p>
+    </div>
+
+</div>
+{% endblock %}
