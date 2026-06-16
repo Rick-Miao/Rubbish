@@ -251,11 +251,10 @@ def identify_image():
         return jsonify({'error': '不支持的文件格式'}), 400
     
     # 2. 保存文件到服务器
-    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'jpg'
     # 使用毫秒级时间戳，防止高并发下同一秒上传导致文件名冲突
     timestamp = int(time.time() * 1000)
-    filename = f"{timestamp}.{ext}"
-    upload_folder = current_app.config.get('UPLOAD_FOLDER', os.path.join('app', 'static', 'uploads'))
+    filename = f"{timestamp}.jpg"  # 强制使用 .jpg
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', os.path.join(current_app.instance_path, 'uploads'))
     os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, filename)
     file.save(filepath)
