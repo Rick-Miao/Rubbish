@@ -47,7 +47,7 @@
             
             <!-- 可回收物 -->
             <div class="col-6">
-                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                <a href="{{ url_for('main.category_detail', category_id=1) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
                    style="height: 72px; background-color: #266c86; border-color: #266c86;">
                     <img src="{{ url_for('static', filename='images/可回收物.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="可回收物">
                     <span class="fw-bold text-start flex-grow-1">可回收物</span>
@@ -56,7 +56,7 @@
 
             <!-- 有害垃圾 -->
             <div class="col-6">
-                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                <a href="{{ url_for('main.category_detail', category_id=2) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
                    style="height: 72px; background-color: #ff1504; border-color: #ff1504;">
                     <img src="{{ url_for('static', filename='images/有害垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="有害垃圾">
                     <span class="fw-bold text-start flex-grow-1">有害垃圾</span>
@@ -65,7 +65,7 @@
 
             <!-- 厨余垃圾 -->
             <div class="col-6">
-                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                <a href="{{ url_for('main.category_detail', category_id=3) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
                    style="height: 72px; background-color: #26ac04; border-color: #26ac04;">
                     <img src="{{ url_for('static', filename='images/厨余垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="厨余垃圾">
                     <span class="fw-bold text-start flex-grow-1">厨余垃圾</span>
@@ -74,7 +74,7 @@
 
             <!-- 其他垃圾 -->
             <div class="col-6">
-                <a href="#" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                <a href="{{ url_for('main.category_detail', category_id=4) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
                    style="height: 72px; background-color: #261504; border-color: #261504;">
                     <img src="{{ url_for('static', filename='images/其他垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="其他垃圾">
                     <span class="fw-bold text-start flex-grow-1">其他垃圾</span>
@@ -112,21 +112,16 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.category) {
-                alert('识别结果：' + data.category);
-                // 你也可以把结果显示在页面上，比如弹窗或固定区域
-            } else {
-                alert('识别失败：' + (data.error || '未知错误'));
-            }
+            window.location.href = "/detail/" + encodeURIComponent(data.name);
         })
         .catch(error => {
             console.error('Error:', error);
             alert('网络错误，请稍后重试');
         })
         .finally(() => {
-            btn.innerHTML = originalText;
+            const btn = document.getElementById('identifyBtn');
+            btn.innerHTML = '<i class="bi bi-camera-fill me-2"></i>识别';
             btn.disabled = false;
-            // 清空 input，以便重复上传同一个文件
             document.getElementById('cameraInput').value = '';
         });
     });

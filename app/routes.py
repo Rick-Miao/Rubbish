@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from datetime import datetime
 
@@ -176,10 +177,21 @@ def history():
     # 将数据传递给 history.html 模板
     return render_template('history.html', history_data=history_data)
 
-@bp.route('/recycle')
-def recycle_detail():
-    # 这里可以直接渲染模板，后续可以从 SQLite 查询该分类下的物品列表传给前端
-    return render_template('category_detail.html')
+@bp.route('/category/<int:category_id>')
+def category_detail(category_id):
+    category = Category.query.get(category_id)
+    if not category:
+        flash('未找到该分类的信息')
+        return redirect(url_for('main.index'))
+    items = category.items.all()  # 获取该分类下的所有物品
+    color_map = {
+        '可回收物': '#266c86',
+        '有害垃圾': '#ff1504',
+        '厨余垃圾': '#26ac04',
+        '其他垃圾': '#261504'
+    }
+    category_color = color_map.get(category.name, '#6c757d')
+    return render_template('category_detail.html', category=category, items=items, category_color=category_color)
 
 # 物品详情路由，URL 中包含物品名称参数
 @bp.route('/detail/<item_name>')
@@ -230,9 +242,12 @@ def identify_image():
     if not allowed_file(file.filename):
         return jsonify({'error': '不支持的文件格式'}), 400
     
-    # 2. 可选：保存文件到服务器（临时）
-    filename = secure_filename(file.filename)
-    upload_folder = current_app.config.get('UPLOAD_FOLDER', '/tmp')
+    # 2. 保存文件到服务器
+    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'jpg'
+    # 使用毫秒级时间戳，防止高并发下同一秒上传导致文件名冲突
+    timestamp = int(time.time() * 1000)
+    filename = f"{timestamp}.{ext}"
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', os.path.join('app', 'static', 'uploads'))
     os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, filename)
     file.save(filepath)
@@ -248,22 +263,16 @@ def identify_image():
     except Exception as e:
         return jsonify({'error': f'模型推理异常：{e}'}), 500
 
-    if not results or len(results[0].boxes) == 0:
-        predicted_category = '未检测到目标'
-    else:
+    predicted_name = '暂未收录'
+
+    if results and len(results[0].boxes) > 0:
         result = results[0]
         boxes = result.boxes
-        best_idx = int(boxes.conf.argmax().item()) if boxes.conf is not None else 0
+        best_idx = int(boxes.conf.argmax().item())
         class_id = int(boxes.cls[best_idx].item())
-        predicted_category = result.names.get(class_id, str(class_id))
+        predicted_name = result.names.get(class_id, '暂未收录')
 
-    # 删除临时文件
-    try:
-        os.remove(filepath)
-    except OSError:
-        pass
-
-    return jsonify({'category': predicted_category})
+    return jsonify({'name': predicted_name})
 
 
 def allowed_file(filename):

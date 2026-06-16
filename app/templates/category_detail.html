@@ -32,8 +32,8 @@
         <!-- 使用你之前指定的可回收物颜色 #266c86。如果想纯用 Bootstrap 类，可替换为 bg-primary -->
         <!-- 使用 <br> 实现文字竖排，无需任何 CSS -->
         <div class="text-white fw-bold fs-5 d-flex align-items-center justify-content-center text-center rounded-start-3" 
-             style="width: 64px; background-color: #266c86;">
-            可<br>回<br>收<br>物
+             style="width: 64px; background-color: {{ category_color }};">
+             {{ category.name }}
         </div>
         
         <!-- 2. 右侧物品列表区域 -->
@@ -41,27 +41,20 @@
             <!-- d-flex flex-column 垂直排列，gap-2 实现每行之间的间隙 -->
             <div class="d-flex flex-column gap-2">
                 
-                <!-- 物品行 1 -->
-                <!-- border-top border-bottom 实现上下线，rounded-2 让边角圆润配合间隙 -->
-                <div class="bg-white border-top border-bottom p-3 rounded-2 text-dark fw-medium d-flex align-items-center">
-                    <i class="bi bi-phone text-secondary me-2"></i>
-                    废手机
-                </div>
-                
-                <!-- 物品行 2 -->
-                <div class="bg-white border-top border-bottom p-3 rounded-2 text-dark fw-medium d-flex align-items-center">
-                    <i class="bi bi-circle text-secondary me-2"></i>
-                    瑜伽垫
-                </div>
-                
-                <!-- 物品行 3 -->
-                <div class="bg-white border-top border-bottom p-3 rounded-2 text-dark fw-medium d-flex align-items-center">
-                    <i class="bi bi-hat-fedora text-secondary me-2"></i>
-                    旧帽子
-                </div>
-
-                <!-- 可以继续添加更多物品... -->
-
+                {% for item in items %}
+                    <a href="{{ url_for('main.detail', item_name=item.name) }}" 
+                       class="text-decoration-none text-dark d-block">
+                        
+                        <div class="bg-white border p-3 rounded-2 fw-medium d-flex align-items-center shadow-sm">
+                            <i class="bi bi-box-seam text-secondary me-2"></i>
+                            
+                            <span class="flex-grow-1">{{ item.name }}</span>
+                            
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </div>
+                        
+                    </a>
+                {% endfor %}
             </div>
         </div>
         
