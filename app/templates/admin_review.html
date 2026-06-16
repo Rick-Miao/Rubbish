@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}人工纠错审核 - 垃圾分类助手{% endblock %}
-
 {% block content %}
 <!-- 顶部导航栏 -->
 <nav class="navbar bg-white border-bottom sticky-top">
     <div class="container-fluid position-relative py-2">
+        <!-- 返回按钮 -->
         <a href="{{ url_for('main.profile') }}" class="btn btn-link text-dark text-decoration-none p-0">
             <i class="bi bi-chevron-left fs-3"></i>
         </a>
-        <h1 class="h5 fw-bold mb-0 position-absolute start-50 translate-middle-x">纠错审核</h1>
-        <div style="width: 24px;"></div> 
+        
+        <!-- 页面标题 (绝对定位实现水平与垂直完美居中) -->
+        <h1 class="h5 fw-bold mb-0 position-absolute top-50 start-50 translate-middle">纠错审核</h1>
     </div>
 </nav>
 
@@ -20,17 +20,17 @@
         
         {% for group in review_data %}
         
-        <!-- 1. 日期分组标题 -->
+        <!-- 日期分组标题 -->
         <div class="list-group-item bg-light text-muted fw-bold small px-3 py-2 border-0">
             {{ group.date }}
         </div>
         
-        <!-- 2. 具体的反馈卡片 -->
+        <!-- 反馈卡片 -->
         {% for item in group['items'] %}
         <div class="list-group-item px-3 py-3">
             <div class="d-flex align-items-start">
                 
-                <!-- 左侧：识别时的原图 -->
+                <!-- 识别原图缩略图 -->
                 <div class="bg-light rounded-3 d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px; overflow: hidden;">
                     {% if item.timestamp %}
                         <img src="{{ url_for('main.uploaded_file', filename=item.timestamp ~ '.jpg') }}" 
@@ -41,15 +41,16 @@
                     {% endif %}
                 </div>
                 
-                <!-- 中间：详细信息区 -->
+                <!-- 详细信息区 -->
                 <div class="flex-grow-1">
-                    <!-- 第一行：物品名、分类、审核状态 -->
+                    <!-- 物品名称、分类与审核状态 -->
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="fw-bold text-dark">
                             {{ item.item_name }} 
                             <span class="badge bg-secondary ms-1">{{ item.category }}</span>
                         </div>
-                        <!-- 状态标签 -->
+                        
+                        <!-- 审核状态徽章 -->
                         {% if item.verify_status == 'waiting' %}
                             <span class="badge bg-warning text-dark">待审核</span>
                         {% elif item.verify_status == 'verified' %}
@@ -59,19 +60,19 @@
                         {% endif %}
                     </div>
                     
-                    <!-- 第二行：用户的反馈内容 -->
+                    <!-- 用户反馈内容 -->
                     <div class="text-muted small mt-1 p-2 bg-light rounded-2">
                         <i class="bi bi-chat-left-text me-1 text-primary"></i>{{ item.content }}
                     </div>
                     
-                    <!-- 第三行：提交人与时间 -->
+                    <!-- 提交人与时间 -->
                     <div class="text-secondary small mt-1">
                         由 <span class="fw-semibold text-dark">{{ item.user_nickname }}</span> 提交于 {{ item.time }}
                     </div>
                 </div>
             </div>
             
-            <!-- 底部：审核操作按钮 (仅当状态为 waiting 时显示) -->
+            <!-- 审核操作按钮 (仅待审核状态可见) -->
             {% if item.verify_status == 'waiting' %}
             <div class="d-flex gap-2 mt-2 ps-4">
                 <button class="btn btn-sm btn-success flex-fill" onclick="handleReview({{ item.feedback_id }}, 'verified')">
@@ -92,7 +93,7 @@
         {% if not review_data %}
         <div class="text-center text-muted py-5">
             <i class="bi bi-shield-check fs-1 d-block mb-2"></i>
-            <p>暂无待审核的纠错反馈</p>
+            <p class="mb-0">暂无待审核的纠错反馈</p>
         </div>
         {% endif %}
 
@@ -100,39 +101,32 @@
 </div>
 
 <script>
-    // 处理审核按钮点击
+    // 处理审核操作（采纳或驳回）
     function handleReview(feedbackId, action) {
-        let actionText = action === 'verified' ? '采纳该纠错' : '驳回该反馈';
+        const actionText = action === 'verified' ? '采纳该纠错' : '驳回该反馈';
         
-        // 1. 二次确认
-        if(confirm(`确定要 ${actionText} 吗？`)) {
-            
-            // 2. 发送 POST 请求到后端 API
-            fetch("{{ url_for('main.api_review_feedback') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json' // 告诉后端我们发送的是 JSON 数据
-                },
-                body: JSON.stringify({
-                    feedback_id: feedbackId,
-                    action: action
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // 3. 处理后端返回的结果
-                if (data.success) {
-                    location.reload(); // 刷新页面，让列表状态实时更新
-                } else {
-                    alert('操作失败：' + (data.error || '未知错误'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('网络错误，请稍后重试');
-            });
-            
-        }
+        // 二次确认防误触
+        if (!confirm(`确定要 ${actionText} 吗？`)) return;
+        
+        // 发送异步请求更新状态
+        fetch("{{ url_for('main.api_review_feedback') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ feedback_id: feedbackId, action: action })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // 操作成功后刷新页面以更新列表状态
+                location.reload(); 
+            } else {
+                alert('操作失败：' + (data.error || '未知错误'));
+            }
+        })
+        .catch(err => {
+            console.error('审核请求异常:', err);
+            alert('网络错误，请稍后重试');
+        });
     }
 </script>
 {% endblock %}

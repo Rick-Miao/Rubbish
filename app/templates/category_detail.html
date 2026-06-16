@@ -1,60 +1,48 @@
 {% extends 'base.html' %}
 
-{% block title %}垃圾索引 - 可回收物{% endblock %}
-
 {% block content %}
-<!-- ========================================== -->
-<!-- 顶部导航栏 (复用之前的居中布局) -->
-<!-- ========================================== -->
+<!-- 顶部导航栏 -->
 <nav class="navbar bg-white border-bottom sticky-top">
     <div class="container-fluid position-relative py-2">
-        <!-- 左侧返回按钮 -->
+        <!-- 返回按钮 -->
         <a href="{{ url_for('main.index') }}" class="btn btn-link text-dark text-decoration-none p-0">
             <i class="bi bi-chevron-left fs-3"></i>
         </a>
         
-        <!-- 居中标题 -->
-        <h1 class="h5 fw-bold mb-0 position-absolute start-50 translate-middle-x">垃圾索引</h1>
-        
-        <!-- 右侧占位 -->
-        <div style="width: 24px;"></div> 
+        <!-- 页面标题 (绝对定位实现水平与垂直完美居中) -->
+        <h1 class="h5 fw-bold mb-0 position-absolute top-50 start-50 translate-middle">垃圾索引</h1>
     </div>
 </nav>
 
-<!-- ========================================== -->
-<!-- 主体内容：左右布局 -->
-<!-- ========================================== -->
+<!-- 主体内容区 -->
 <div class="container-fluid p-2 mt-2">
-    <!-- d-flex 实现左右并排 -->
     <div class="d-flex" style="min-height: 80vh;">
         
-        <!-- 1. 左侧蓝色纵列 -->
-        <!-- 使用你之前指定的可回收物颜色 #266c86。如果想纯用 Bootstrap 类，可替换为 bg-primary -->
-        <!-- 使用 <br> 实现文字竖排，无需任何 CSS -->
+        <!-- 左侧分类名称纵列 -->
         <div class="text-white fw-bold fs-5 d-flex align-items-center justify-content-center text-center rounded-start-3" 
              style="width: 64px; background-color: {{ category_color }};">
-             {{ category.name }}
+            {{ category.name }}
         </div>
         
-        <!-- 2. 右侧物品列表区域 -->
+        <!-- 右侧物品列表 -->
         <div class="flex-grow-1 ps-2">
-            <!-- d-flex flex-column 垂直排列，gap-2 实现每行之间的间隙 -->
             <div class="d-flex flex-column gap-2">
                 
                 {% for item in items %}
-                    <a href="{{ url_for('main.detail', item_name=item.name) }}" 
-                       class="text-decoration-none text-dark d-block">
-                        
-                        <div class="bg-white border p-3 rounded-2 fw-medium d-flex align-items-center shadow-sm">
-                            <i class="bi bi-box-seam text-secondary me-2"></i>
+                    <a href="{{ url_for('main.detail', item_name=item.name) }}" class="text-decoration-none text-dark d-block">
+                        <div class="bg-white border p-3 rounded-2 d-flex align-items-center shadow-sm">
+                            <!-- 物品图标 -->
+                            <i class="bi bi-box-seam text-secondary me-3"></i>
                             
-                            <span class="flex-grow-1">{{ item.name }}</span>
+                            <!-- 物品名称 -->
+                            <span class="flex-grow-1 fw-medium">{{ item.name }}</span>
                             
+                            <!-- 右侧指示箭头 -->
                             <i class="bi bi-chevron-right text-muted"></i>
                         </div>
-                        
                     </a>
                 {% endfor %}
+                
             </div>
         </div>
         

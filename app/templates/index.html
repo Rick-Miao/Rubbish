@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container-fluid p-3">
     
-    <!-- 顶部两个并排按钮 -->
+    <!-- 核心操作区 -->
     <div class="row g-3 mb-4">
         <div class="col-6">
             <a id="identifyBtn" href="#" class="btn btn-primary w-100 py-3 fs-5 fw-bold shadow-sm">
@@ -27,106 +27,80 @@
                 &gt;
             </a>
         </div>
-        <div class="position-relative">
-            <!-- d-flex + flex-nowrap + overflow-auto 实现纯 Bootstrap 横向滚动 -->
-             <div class="d-flex flex-nowrap overflow-auto pb-2 gap-3">
-                {% for item in high_freq_items %}
-                    <a href="{{ url_for('main.detail', item_name=item.name) }}" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
-                        <img src="{{ item.item_url }}" class="rounded-3 border bg-white w-100" alt="{{ item.name }}">
-                        <div class="small mt-2">{{ item.name }}</div>
-                    </a>
-                {% endfor %}
-             </div>
+        <div class="d-flex flex-nowrap overflow-auto pb-2 gap-3">
+            {% for item in high_freq_items %}
+                <a href="{{ url_for('main.detail', item_name=item.name) }}" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
+                    <img src="{{ item.item_url }}" class="rounded-3 border bg-white w-100" alt="{{ item.name }}">
+                    <div class="small mt-2">{{ item.name }}</div>
+                </a>
+            {% endfor %}
         </div>
     </div>
 
-    <!-- 垃圾索引 -->
+    <!-- 垃圾分类索引 -->
     <div class="mb-4">
         <h6 class="fw-bold mb-3 text-secondary">垃圾索引</h6>
-        <div class="row g-3">
+                <div class="row g-3">
+            {% set categories = [{'id': 1, 'name': '可回收物', 'color': '#266c86'}, {'id': 2, 'name': '有害垃圾', 'color': '#ff1504'}, {'id': 3, 'name': '厨余垃圾', 'color': '#26ac04'}, {'id': 4, 'name': '其他垃圾', 'color': '#261504'}] %}
             
-            <!-- 可回收物 -->
+            {% for cat in categories %}
             <div class="col-6">
-                <a href="{{ url_for('main.category_detail', category_id=1) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
-                   style="height: 72px; background-color: #266c86; border-color: #266c86;">
-                    <img src="{{ url_for('static', filename='images/可回收物.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="可回收物">
-                    <span class="fw-bold text-start flex-grow-1">可回收物</span>
+                <a href="{{ url_for('main.category_detail', category_id=cat.id) }}" 
+                   class="d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: {{ cat.color }};">
+                    <img src="{{ url_for('static', filename='images/' ~ cat.name ~ '.png') }}" 
+                         class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="{{ cat.name }}">
+                    <span class="fw-bold text-start flex-grow-1">{{ cat.name }}</span>
                 </a>
             </div>
-
-            <!-- 有害垃圾 -->
-            <div class="col-6">
-                <a href="{{ url_for('main.category_detail', category_id=2) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
-                   style="height: 72px; background-color: #ff1504; border-color: #ff1504;">
-                    <img src="{{ url_for('static', filename='images/有害垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="有害垃圾">
-                    <span class="fw-bold text-start flex-grow-1">有害垃圾</span>
-                </a>
-            </div>
-
-            <!-- 厨余垃圾 -->
-            <div class="col-6">
-                <a href="{{ url_for('main.category_detail', category_id=3) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
-                   style="height: 72px; background-color: #26ac04; border-color: #26ac04;">
-                    <img src="{{ url_for('static', filename='images/厨余垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="厨余垃圾">
-                    <span class="fw-bold text-start flex-grow-1">厨余垃圾</span>
-                </a>
-            </div>
-
-            <!-- 其他垃圾 -->
-            <div class="col-6">
-                <a href="{{ url_for('main.category_detail', category_id=4) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
-                   style="height: 72px; background-color: #261504; border-color: #261504;">
-                    <img src="{{ url_for('static', filename='images/其他垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="其他垃圾">
-                    <span class="fw-bold text-start flex-grow-1">其他垃圾</span>
-                </a>
-            </div>
-
+            {% endfor %}
         </div>
     </div>
 
 </div>
+
 <script>
-    // 点击识别按钮 -> 触发文件选择
-    document.getElementById('identifyBtn').addEventListener('click', function(e) {
-        e.preventDefault();      // 阻止 <a> 的默认跳转
-        document.getElementById('cameraInput').click();
-    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const identifyBtn = document.getElementById('identifyBtn');
+        const cameraInput = document.getElementById('cameraInput');
+        const originalBtnHTML = identifyBtn.innerHTML;
 
-    // 当用户选择了图片后
-    document.getElementById('cameraInput').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+        identifyBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            cameraInput.click();
+        });
 
-        // 显示加载状态
-        const btn = document.getElementById('identifyBtn');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>识别中...';
-        btn.disabled = true;
+        cameraInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-        const formData = new FormData();
-        formData.append('image', file);
+            identifyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>识别中...';
+            identifyBtn.classList.add('disabled');
 
-        fetch("{{ url_for('main.identify_image') }}", {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            let url = "/detail/" + encodeURIComponent(data.name) + "?from=identify";
-            if (data.record_id) {
-                url += "&record_id=" + data.record_id;
-            }
-            window.location.href = url;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('网络错误，请稍后重试');
-        })
-        .finally(() => {
-            const btn = document.getElementById('identifyBtn');
-            btn.innerHTML = '<i class="bi bi-camera-fill me-2"></i>识别';
-            btn.disabled = false;
-            document.getElementById('cameraInput').value = '';
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch("{{ url_for('main.identify_image') }}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                let url = `/detail/${encodeURIComponent(data.name)}?from=identify`;
+                if (data.record_id) {
+                    url += `&record_id=${data.record_id}`;
+                }
+                window.location.href = url;
+            })
+            .catch(err => {
+                console.error('识别请求失败:', err);
+                alert('网络错误，请稍后重试');
+            })
+            .finally(() => {
+                identifyBtn.innerHTML = originalBtnHTML;
+                identifyBtn.classList.remove('disabled');
+                cameraInput.value = '';
+            });
         });
     });
 </script>

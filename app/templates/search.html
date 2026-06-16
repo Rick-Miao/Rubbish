@@ -4,72 +4,57 @@
 {% block content %}
 <div class="container-fluid p-3 bg-white min-vh-100">
     
-    <!-- 搜索框 -->
+    <!-- 搜索框区域 -->
     <div class="mb-4 pt-2">
         <form id="searchForm" action="#" method="GET">
-            <!-- 【修改】：外层加上 position-relative 用于定位下拉框 -->
+            <!-- 相对定位容器，用于下拉框的绝对定位 -->
             <div class="position-relative">
                 <div class="input-group shadow-sm rounded-pill border">
                     <span class="input-group-text bg-light border-0 text-secondary ps-3 pe-2">
                         <i class="bi bi-search"></i>
                     </span>
-                    <!-- 【修改】：去掉了 list="suggestions" 和 autocomplete="off"，type 改为 text -->
                     <input type="text" id="searchInput" class="form-control bg-light border-0 py-2 shadow-none" placeholder="搜索垃圾查询对应分类" name="keyword">
                 </div>
                 
-                <!-- 【新增】：自定义的下拉候选框容器 (绝对定位在输入框下方) -->
+                <!-- 搜索建议下拉框容器 -->
                 <ul id="suggestionsBox" class="list-group position-absolute w-100 shadow-sm mt-1" 
                     style="z-index: 1050; display: none; max-height: 250px; overflow-y: auto; border-radius: 1rem;">
-                    <!-- JS 会在这里动态生成 li 标签 -->
                 </ul>
             </div>
         </form>
     </div>
 
+    <!-- 热门搜索 -->
     <div class="mb-5">
         <div class="text-secondary small mb-3">热门搜索</div>
         <div class="d-flex flex-wrap gap-2">
-            
-            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">使用过的塑料袋</a>
-            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">口红</a>
-            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">防震泡沫</a>
-            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">牛奶纸盒</a>
-            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">旧衣服</a>
-            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">干电池</a>
-            <a href="#" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">剩菜剩饭</a>
+            {% for keyword in hot_searches %}
+                <a href="{{ url_for('main.detail', item_name=keyword) }}" class="btn btn-light border rounded-pill btn-sm text-secondary px-3 py-1">{{ keyword }}</a>
+            {% endfor %}
         </div>
     </div>
 
+    <!-- 生活垃圾分类指南 -->
     <div class="mb-4">
         <h5 class="fw-bold mb-4 text-center">生活垃圾分类指南</h5>
         <div class="row g-3">
+            <!-- 使用循环渲染四个分类，避免代码重复 -->
+            {% set categories = [{'id': 1, 'name': '可回收物', 'color': '#266c86'}, {'id': 2, 'name': '有害垃圾', 'color': '#ff1504'}, {'id': 3, 'name': '厨余垃圾', 'color': '#26ac04'}, {'id': 4, 'name': '其他垃圾', 'color': '#261504'}] %}
+            {% for cat in categories %}
             <div class="col-6">
-                <a href="{{ url_for('main.category_detail', category_id=1) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" style="height: 72px; background-color: #266c86;">
-                    <img src="{{ url_for('static', filename='images/可回收物.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="可回收物">
-                    <span class="fw-bold text-start flex-grow-1">可回收物</span>
+                <a href="{{ url_for('main.category_detail', category_id=cat.id) }}" 
+                   class="d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 72px; background-color: {{ cat.color }};">
+                    <img src="{{ url_for('static', filename='images/' ~ cat.name ~ '.png') }}" 
+                         class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="{{ cat.name }}">
+                    <span class="fw-bold text-start flex-grow-1">{{ cat.name }}</span>
                 </a>
             </div>
-            <div class="col-6">
-                <a href="{{ url_for('main.category_detail', category_id=2) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" style="height: 72px; background-color: #ff1504;">
-                    <img src="{{ url_for('static', filename='images/有害垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="有害垃圾">
-                    <span class="fw-bold text-start flex-grow-1">有害垃圾</span>
-                </a>
-            </div>
-            <div class="col-6">
-                <a href="{{ url_for('main.category_detail', category_id=3) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" style="height: 72px; background-color: #26ac04;">
-                    <img src="{{ url_for('static', filename='images/厨余垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="厨余垃圾">
-                    <span class="fw-bold text-start flex-grow-1">厨余垃圾</span>
-                </a>
-            </div>
-            <div class="col-6">
-                <a href="{{ url_for('main.category_detail', category_id=4) }}" class="btn d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" style="height: 72px; background-color: #261504;">
-                    <img src="{{ url_for('static', filename='images/其他垃圾.png') }}" class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="其他垃圾">
-                    <span class="fw-bold text-start flex-grow-1">其他垃圾</span>
-                </a>
-            </div>
+            {% endfor %}
         </div>
     </div>
 
+    <!-- 底部环保海报 -->
     <div class="mt-5 pb-5 text-center">
         <img src="{{ url_for('static', filename='images/poster.jpg') }}" class="img-fluid rounded-4 w-100 object-fit-cover" alt="环保海报">
     </div>
@@ -77,71 +62,70 @@
 </div>
 
 <script>
-    const searchInput = document.getElementById('searchInput');
-    const suggestionsBox = document.getElementById('suggestionsBox');
-    const searchForm = document.getElementById('searchForm');
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsBox = document.getElementById('suggestionsBox');
+        const searchForm = document.getElementById('searchForm');
 
-    // 1. 监听输入框变化，实时获取并渲染候选词
-    searchInput.addEventListener('input', function() {
-        const keyword = this.value.trim();
-        if (!keyword) {
-            suggestionsBox.style.display = 'none'; // 没输入就隐藏
-            return;
-        }
-        
-        // 请求后端 API
-        fetch("{{ url_for('main.search_suggestions') }}?keyword=" + encodeURIComponent(keyword))
-            .then(response => response.json())
-            .then(data => {
-                suggestionsBox.innerHTML = ''; // 清空旧数据
-                
-                if (Array.isArray(data) && data.length > 0) {
-                    // 遍历后端返回的数组，生成 Bootstrap 的 list-group-item
-                    data.forEach(name => {
-                        const li = document.createElement('li');
-                        li.className = 'list-group-item list-group-item-action border-0 py-2';
-                        li.style.cursor = 'pointer';
-                        li.textContent = name;
-                        
-                        // 点击候选词：填入输入框，隐藏下拉框，并直接跳转
-                        li.addEventListener('click', function() {
-                            searchInput.value = name;
-                            suggestionsBox.style.display = 'none';
-                            window.location.href = "/detail/" + encodeURIComponent(name);
+        // 监听输入框变化，实时获取并渲染搜索建议
+        searchInput.addEventListener('input', function() {
+            const keyword = this.value.trim();
+            if (!keyword) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+            
+            fetch("{{ url_for('main.search_suggestions') }}?keyword=" + encodeURIComponent(keyword))
+                .then(res => res.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = '';
+                    
+                    if (Array.isArray(data) && data.length > 0) {
+                        data.forEach(name => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item list-group-item-action border-0 py-2';
+                            li.style.cursor = 'pointer';
+                            li.textContent = name;
+                            
+                            // 点击候选词：填入输入框并跳转详情页
+                            li.addEventListener('click', function() {
+                                searchInput.value = name;
+                                suggestionsBox.style.display = 'none';
+                                window.location.href = "/detail/" + encodeURIComponent(name);
+                            });
+                            
+                            suggestionsBox.appendChild(li);
                         });
-                        
-                        suggestionsBox.appendChild(li);
-                    });
-                    // 显示下拉框
-                    suggestionsBox.style.display = 'block';
-                } else {
-                    // 没查到数据，隐藏下拉框
-                    suggestionsBox.style.display = 'none';
-                }
-            })
-            .catch(err => console.error('获取搜索建议失败:', err));
-    });
+                        suggestionsBox.style.display = 'block';
+                    } else {
+                        suggestionsBox.style.display = 'none';
+                    }
+                })
+                .catch(err => console.error('获取搜索建议失败:', err));
+        });
 
-    // 2. 拦截表单提交（用户输入后按回车）
-    searchForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const keyword = searchInput.value.trim();
-        if (keyword) {
-            window.location.href = "/detail/" + encodeURIComponent(keyword);
-        }
-    });
+        // 拦截表单提交（用户按回车触发）
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                window.location.href = "/detail/" + encodeURIComponent(keyword);
+            }
+        });
 
-    // 3. 处理热门搜索的点击事件
-    function quickSearch(keyword) {
-        window.location.href = "/detail/" + encodeURIComponent(keyword);
-    }
+        // 绑定热门搜索标签的点击事件
+        document.querySelectorAll('.hot-search-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                window.location.href = "/detail/" + encodeURIComponent(this.textContent);
+            });
+        });
 
-    // 4. 点击页面其他区域时，自动隐藏下拉框
-    document.addEventListener('click', function(e) {
-        // 如果点击的不是输入框，也不是下拉框内部，就隐藏
-        if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
-            suggestionsBox.style.display = 'none';
-        }
+        // 点击页面空白处隐藏下拉框
+        document.addEventListener('click', function(e) {
+            if (!suggestionsBox.contains(e.target) && e.target !== searchInput) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
     });
 </script>
 {% endblock %}
