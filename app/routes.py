@@ -2,15 +2,16 @@ import os
 import time
 from pathlib import Path
 from datetime import datetime
+from collections import defaultdict
 
 # Flask 相关工具统一导入
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, session
+from flask import Blueprint, render_template, request, redirect, send_from_directory, url_for, flash, jsonify, current_app, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 # 数据库与模型统一导入
 from app import db
-from app.models import Item, Category, User 
+from app.models import Item, Category, User, Record
 import uuid  # 用于生成唯一的文件名
 
 try:
@@ -150,29 +151,36 @@ def profile():
 # 识别历史路由
 @bp.route('/history')
 def history():
-    history_data = [
-        {
-            "date": "十一月 17, 2025",
-            "items": [
-                {"name": "废电池", "category": "有害垃圾", "time": "14:30", "icon": "battery.png"},
-                {"name": "奶茶杯", "category": "其他垃圾", "time": "10:15", "icon": "cup.png"},
-                {"name": "纸巾", "category": "其他垃圾", "time": "09:00", "icon": "tissue.png"}
-            ]
-        },
-        {
-            "date": "十一月 16, 2025",
-            "items": [
-                {"name": "苹果核", "category": "厨余垃圾", "time": "18:20", "icon": "apple.png"},
-                {"name": "易拉罐", "category": "可回收物", "time": "12:05", "icon": "can.png"}
-            ]
-        },
-        {
-            "date": "十一月 15, 2025",
-            "items": [
-                {"name": "碎陶瓷", "category": "其他垃圾", "time": "16:40", "icon": "ceramic.png"}
-            ]
-        }
-    ]
+    if 'user_id' not in session:
+        return redirect(url_for('main.login'))
+    records = Record.query.filter_by(user_id=session['user_id']).order_by(Record.identify_time.desc()).all()
+    grouped_data = defaultdict(list)
+    for record in records:
+        # 格式化日期 (例如: 2026-06-16)
+        date_str = record.identify_time.strftime('%Y-%m-%d')
+        
+        # 格式化时间 (例如: 14:30)
+        time_str = record.identify_time.strftime('%H:%M')
+        
+        # 【核心】：利用 backref 获取关联的物品和分类名称
+        # record.identified_item 会返回 Item 对象
+        item_obj = record.identified_item
+        item_name = item_obj.name if item_obj else '未知物品'
+        
+        # item_obj.category 会返回 Category 对象
+        category_name = item_obj.category.name if item_obj and item_obj.category else '未知分类'
+        
+        timestamp_ms = int(record.identify_time.timestamp() * 1000)
+        
+        # 将数据组装成前端需要的字典格式
+        grouped_data[date_str].append({
+            'name': item_name,
+            'category': category_name,
+            'time': time_str,
+            'item_name': item_name,
+            'timestamp': timestamp_ms
+        })
+    history_data = [{'date': k, 'items': v} for k, v in grouped_data.items()]
     
     # 将数据传递给 history.html 模板
     return render_template('history.html', history_data=history_data)
@@ -264,6 +272,7 @@ def identify_image():
         return jsonify({'error': f'模型推理异常：{e}'}), 500
 
     predicted_name = '暂未收录'
+    confidence = 0.0
 
     if results and len(results[0].boxes) > 0:
         result = results[0]
@@ -271,7 +280,24 @@ def identify_image():
         best_idx = int(boxes.conf.argmax().item())
         class_id = int(boxes.cls[best_idx].item())
         predicted_name = result.names.get(class_id, '暂未收录')
+        confidence = float(boxes.conf[best_idx].item())
 
+    if 'user_id' in session:
+        # 去数据库查询识别出的物品（包括“暂未收录”）
+        item_obj = Item.query.filter_by(name=predicted_name).first()
+        
+        # 如果数据库里有这个物品，就创建记录
+        if item_obj:
+            record_time = datetime.fromtimestamp(timestamp / 1000.0)
+            new_record = Record(
+                user_id=session['user_id'],
+                item_id=item_obj.item_id,
+                confidence=confidence,
+                identify_time=record_time
+                # verify_status 在 models.py 里已有默认值，无需手动传
+            )
+            db.session.add(new_record)
+            db.session.commit()
     return jsonify({'name': predicted_name})
 
 
@@ -284,3 +310,10 @@ def about():
 @bp.route('/guide')
 def guide():
     return render_template('guide.html')
+
+# 提供上传文件的访问
+@bp.route('/uploads/<filename>')
+def uploaded_file(filename):
+    # 获取 instance 目录下的 uploads 文件夹
+    uploads_dir = os.path.join(current_app.instance_path, 'uploads')
+    return send_from_directory(uploads_dir, filename)

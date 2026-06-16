@@ -36,13 +36,15 @@
         
         <!-- 2. 该日期下的具体记录 -->
         {% for item in group['items'] %}
-        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center px-3 py-3">
+        <a href="{{ url_for('main.detail', item_name=item.item_name) }}" class="list-group-item list-group-item-action d-flex align-items-center px-3 py-3">
             
             <!-- 左侧：图片/图标占位区 -->
             <!-- 使用 bg-light 和 rounded-3 作为图片底底，如果有了真实图片可替换为 <img> -->
             <div class="bg-light rounded-3 d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 48px; height: 48px;">
-                <!-- 如果有真实图片，请替换为: <img src="{{ url_for('static', filename='images/' + item.icon) }}" class="rounded-3 w-100 h-100" style="object-fit: cover;"> -->
-                <i class="bi bi-image text-secondary fs-4"></i>
+                <img src="{{ url_for('main.uploaded_file', filename=item.timestamp ~ '.jpg') }}" 
+                     class="w-100 h-100" 
+                     style="object-fit: cover;"
+                     onerror="this.style.display='none'">
             </div>
             
             <!-- 中间：物品名称与分类结果 -->
