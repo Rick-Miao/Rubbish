@@ -2,55 +2,56 @@
 {% set active_page = 'identify' %}
 
 {% block content %}
-<div class="container-fluid p-3">
+<div class="container-fluid p-4 d-flex flex-column" style="min-height: calc(100vh - 80px);">
     
-    <!-- 核心操作区 -->
+    <div class="bg-white rounded-4 shadow-sm py-3 text-center mb-4 border-bottom border-primary border-3">
+        <h3 class="fw-bold text-primary mb-0" style="letter-spacing: 2px;">智能垃圾分类系统</h3>
+    </div>
+
     <div class="row g-3 mb-4">
         <div class="col-6">
-            <a id="identifyBtn" href="#" class="btn btn-primary w-100 py-3 fs-5 fw-bold shadow-sm">
-                <i class="bi bi-camera-fill me-2"></i>识别
+            <a id="identifyBtn" href="#" class="btn btn-primary w-100 py-4 fs-4 fw-bold shadow-sm">
+                <i class="bi bi-camera-fill me-2 fs-3"></i>识别
             </a>
             <input type="file" id="cameraInput" accept="image/*" style="display: none;">
         </div>
         <div class="col-6">
-            <a href="{{ url_for('main.guide') }}" class="btn btn-outline-primary w-100 py-3 fs-5 fw-bold shadow-sm">
-                <i class="bi bi-book-fill me-2"></i>分类指南
+            <a href="{{ url_for('main.guide') }}" class="btn btn-outline-primary w-100 py-4 fs-4 fw-bold shadow-sm">
+                <i class="bi bi-book-fill me-2 fs-3"></i>分类指南
             </a>
         </div>
     </div>
 
-    <!-- 高频易错垃圾 -->
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="fw-bold text-secondary mb-0">高频易错垃圾</h6>
-            <a href="{{ url_for('main.high_frequency_list') }}" class="text-decoration-none text-secondary fs-5">
+            <h5 class="fw-bold text-secondary mb-0">高频易错垃圾</h5>
+            <a href="{{ url_for('main.high_frequency_list') }}" class="text-decoration-none text-secondary fs-4">
                 &gt;
             </a>
         </div>
         <div class="d-flex flex-nowrap overflow-auto pb-2 gap-3">
             {% for item in high_freq_items %}
-                <a href="{{ url_for('main.detail', item_name=item.name) }}" class="text-decoration-none text-dark text-center" style="min-width: 100px;">
-                    <img src="{{ item.item_url }}" class="rounded-3 border bg-white w-100" alt="{{ item.name }}">
-                    <div class="small mt-2">{{ item.name }}</div>
+                <a href="{{ url_for('main.detail', item_name=item.name) }}" class="text-decoration-none text-dark text-center" style="min-width: 120px;">
+                    <img src="{{ item.item_url }}" class="rounded-4 border bg-white w-100" style="height: 120px; object-fit: cover;" alt="{{ item.name }}">
+                    <div class="fw-medium mt-2 fs-6">{{ item.name }}</div>
                 </a>
             {% endfor %}
         </div>
     </div>
 
-    <!-- 垃圾分类索引 -->
-    <div class="mb-4">
-        <h6 class="fw-bold mb-3 text-secondary">垃圾索引</h6>
-                <div class="row g-3">
+    <div>
+        <h5 class="fw-bold mb-3 text-secondary">垃圾索引</h5>
+        <div class="row g-3">
             {% set categories = [{'id': 1, 'name': '可回收物', 'color': '#266c86'}, {'id': 2, 'name': '有害垃圾', 'color': '#ff1504'}, {'id': 3, 'name': '厨余垃圾', 'color': '#26ac04'}, {'id': 4, 'name': '其他垃圾', 'color': '#261504'}] %}
             
             {% for cat in categories %}
             <div class="col-6">
                 <a href="{{ url_for('main.category_detail', category_id=cat.id) }}" 
-                   class="d-flex align-items-center p-2 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
-                   style="height: 72px; background-color: {{ cat.color }};">
+                   class="d-flex align-items-center p-3 rounded-4 shadow-sm w-100 text-white text-decoration-none" 
+                   style="height: 95px; background-color: {{ cat.color }};">
                     <img src="{{ url_for('static', filename='images/' ~ cat.name ~ '.png') }}" 
-                         class="me-2 rounded-2" style="width: 48px; height: 48px; object-fit: cover;" alt="{{ cat.name }}">
-                    <span class="fw-bold text-start flex-grow-1">{{ cat.name }}</span>
+                         class="me-2 rounded-2" style="width: 56px; height: 56px; object-fit: cover;" alt="{{ cat.name }}">
+                    <span class="fw-bold text-start flex-grow-1 fs-5">{{ cat.name }}</span>
                 </a>
             </div>
             {% endfor %}
@@ -104,5 +105,4 @@
         });
     });
 </script>
-
 {% endblock %}
